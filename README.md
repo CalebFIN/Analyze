@@ -1,60 +1,69 @@
-# Analyze
+# Analyze: Text Analysis and Author Identification
 
+Analyze is a Python script dedicated to processing and examining text conversations, applying similarity computations, sentiment analysis, and topic modeling. The core functionality lies in comparing a new piece of text to a set of reference texts, thereby assessing similarity and predicting authorship.
 
-# Text Analysis and Comparison
+## Getting Started
 
-This Python script analyzes text conversations by calculating similarity, performing sentiment analysis, and topic modeling. It can be used to compare a new text with a set of reference texts to determine similarity, sentiment scores, and the top words per topic.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-## Installation
+### Prerequisites
+
+- Python 3.x
+- pip (Python package installer)
+
+### Installation
 
 1. Clone the repository to your local machine:
 
-   ```
-   git clone https://github.com/CalebFIN/Analyze.git
-   ```
+    ```
+    git clone https://github.com/CalebFIN/Analyze.git
+    ```
 
-2. Navigate to the cloned repository:
+2. Change to the repository directory:
 
-   ```
-   cd Analyze
-   ```
+    ```
+    cd Analyze
+    ```
 
-3. Install the required Python libraries:
+3. Install the necessary Python libraries using the `requirements.txt` file:
 
-   ```
-   pip install -r requirements.txt
-   ```
+    ```
+    pip install -r requirements.txt
+    ```
 
 ## Usage
 
-1. Prepare a text file (`conversation.txt`) containing the example texts. Each line in the file represents a separate text message.
+1. Prepare two text files named `author1.txt` and `author2.txt` containing the example texts you want to analyze. The text should be saved with UTF-8 encoding.
 
-   ```
-   Hey, how are you?
-   I'm good, thanks! What about you?
-   ...
-   ```
+2. Each line in the file should represent a separate text message. For instance:
 
-2. Run the script using the following command:
+    ```
+    Hey, how are you?
+    I'm good, thanks! What about you?
+    ...
+    ```
 
-   ```
-   python main.py previous_texts.txt "Hello, how have you been?"
-   ```
+3. Run the script with the following command:
 
-   Replace `"Hello, how have you been?"` with the simulated text you want to compare with the reference texts.
+    ```
+    python main.py
+    ```
 
-3. The script will analyze the reference texts and compare them with the new text. It will display the similarity percentage, sentiment scores, and the top words per topic.
+4. The script will analyze the reference texts, compare them with a new text, and infer the probable author. The result will be displayed in the console.
 
 ## Customization
 
-- You can modify the script (`main.py`) to incorporate additional functionality or make improvements according to your specific requirements. Refer to the code comments for guidance on different sections.
-
-- Feel free to experiment with different preprocessing techniques, feature extraction methods, or topic modeling parameters to enhance the analysis.
+- You can adapt the script (`main.py`) to incorporate additional features or improvements as per your needs. Code comments provide guidance about different sections of the script.
+- Feel free to experiment with different preprocessing techniques, feature extraction methods, or topic modeling parameters to optimize the analysis.
 
 ## Contributing
 
-Contributions to this project are welcome! If you find any issues or have suggestions for improvements, please submit a pull request or open an issue on the GitHub repository.
+We welcome your contributions! If you discover any issues or have suggestions for enhancements, please open an issue or submit a pull request on the GitHub repository.
 
 ## License
 
-This project is open source and does not have a specific license. You are free to use, modify, and distribute the code as per your requirements.
+This project is open source and available for anyone to use, modify, and distribute. Please ensure any derivative work provides credit and references back to this source.
+
+## Support
+
+If you need help with the script, please feel free to reach out or open an issue. Pull requests for improvements are more than welcome.
