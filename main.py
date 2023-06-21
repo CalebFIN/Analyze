@@ -42,6 +42,7 @@ def predict_author(model, new_text, tokenizer):
     return y_pred[0]
 
 def main():
+    sampleFromUser=input("Give me some TEXT to compare:")
     author1_texts = read_files('author1.txt')
     author2_texts = read_files('author2.txt')
     all_texts = author1_texts + author2_texts
@@ -53,7 +54,7 @@ def main():
 
     model = train_model(all_texts, all_authors, tokenizer)
 
-    new_text = preprocess_text("I think it may be due to the fact, that I am new to learning data analytics.")
+    new_text = preprocess_text(sampleFromUser)
     predicted_author = predict_author(model, new_text, tokenizer)
 
     print('Predicted author:', predicted_author)
