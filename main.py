@@ -1,80 +1,62 @@
-
-import sys
-import nltk
+import numpy as np
+import os
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.preprocessing.text import Tokenizer
 import emoji
-from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from nltk.sentiment import SentimentIntensityAnalyzer
-from nltk.stem import WordNetLemmatizer
-from sklearn.decomposition import LatentDirichletAllocation
-from sklearn.feature_extraction.text import CountVectorizer
 
-def preprocess_text(text):  ## Not functional yet
-    text = emoji.demojize(text)
-    stop_words = set(stopwords.words('english'))
-    lemmatizer = WordNetLemmatizer()
-    processed_text = ' '.join([lemmatizer.lemmatize(word.lower()) for word in text.split() if word.lower() not in stop_words])
+def read_files(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        texts = file.readlines()
+    return [text.strip() for text in texts]
+
+def preprocess_text(text):
+    processed_text = ' '.join([f'emoji_{emoji.demojize(word)}' if emoji.demojize(word).startswith(':') else word for word in text.split()])
     return processed_text
 
-def calculate_similarity(text1, text2):
-    nltk.download('stopwords', quiet=True)
-    nltk.download('wordnet', quiet=True)
-    processed_text1 = preprocess_text(text1)
-    processed_text2 = preprocess_text(text2)
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform([processed_text1, processed_text2])
-    similarity_score = cosine_similarity(tfidf_matrix[0], tfidf_matrix[1])[0][0]
-    similarity_percentage = similarity_score * 100
-    return similarity_percentage
+def train_model(X, y, tokenizer):
+    X_train = tokenizer.texts_to_matrix(X, mode='binary')
+    y_train = np.array(y)
+    X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    input_dim = X_train.shape[1]
+    model = Sequential()
+    model.add(Dense(128, input_dim=input_dim, activation='relu'))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.fit(X_train, y_train, epochs=10, batch_size=32, verbose=0)
+    _, accuracy = model.evaluate(X_test, y_test, verbose=0)
+    print('Accuracy:', accuracy)
+    y_pred_prob = model.predict(X_test)
+    y_pred = np.round(y_pred_prob).flatten().astype(int)
+    print('Classification Report:')
+    print(classification_report(y_test, y_pred))
+    return model
 
-def perform_sentiment_analysis(text):
-    sid = SentimentIntensityAnalyzer()
-    sentiment_scores = sid.polarity_scores(text)
-    return sentiment_scores
+def predict_author(model, new_text, tokenizer):
+    X = tokenizer.texts_to_matrix([new_text], mode='binary')
+    y_pred_prob = model.predict(X)
+    y_pred = np.round(y_pred_prob).flatten().astype(int)
+    return y_pred[0]
 
-def perform_topic_modeling(texts):
-    processed_texts = [preprocess_text(text) for text in texts]
-    vectorizer = CountVectorizer()
-    dtm = vectorizer.fit_transform(processed_texts)
-    lda = LatentDirichletAllocation(n_components=5, random_state=42)
-    lda.fit(dtm)
-    top_words_per_topic = []
-    feature_names = vectorizer.get_feature_names_out()
-    for topic_idx, topic in enumerate(lda.components_):
-        top_words = [feature_names[i] for i in topic.argsort()[:-6:-1]]
-        top_words_per_topic.append(top_words)
-    return top_words_per_topic
+def main():
+    author1_texts = read_files('author1.txt')
+    author2_texts = read_files('author2.txt')
+    all_texts = author1_texts + author2_texts
+    all_authors = [0] * len(author1_texts) + [1] * len(author2_texts)
+    all_texts = [preprocess_text(text) for text in all_texts]
 
-def analyze_text_conversation(reference_texts, new_text):
-    reference_text = ' '.join(reference_texts)
-    similarity = calculate_similarity(reference_text, new_text)
-    sentiment_scores = perform_sentiment_analysis(new_text)
-    topics = perform_topic_modeling([reference_text, new_text])
+    tokenizer = Tokenizer(num_words=1000)
+    tokenizer.fit_on_texts(all_texts)
 
-    print("Reference Texts:")
-    for text in reference_texts:
-        print(text)
-    print()
-    print("New Text:")
-    print(new_text)
-    print(f"Similarity: {similarity:.2f}%")
-    print("Sentiment scores:")
-    print(f"Negative: {sentiment_scores['neg']:.2f}")
-    print(f"Neutral: {sentiment_scores['neu']:.2f}")
-    print(f"Positive: {sentiment_scores['pos']:.2f}")
-    print(f"Compound: {sentiment_scores['compound']:.2f}")
-    print("Top words per topic:")
-    for i, topic in enumerate(topics):
-        print(f"Topic {i+1}: {', '.join(topic)}")
+    model = train_model(all_texts, all_authors, tokenizer)
 
+    new_text = preprocess_text("I think it may be due to the fact, that I am new to learning data analytics.")
+    predicted_author = predict_author(model, new_text, tokenizer)
+
+    print('Predicted author:', predicted_author)
 
 if __name__ == "__main__":
-    if len(sys.argv) > 2:
-        filename = sys.argv[1]
-        with open(filename, 'r') as file:
-            reference_texts = file.readlines()
-        new_text = sys.argv[2]
-        analyze_text_conversation(reference_texts, new_text)
-    else:
-        print("Please provide the filename and new text as command-line arguments.")
+    main()
